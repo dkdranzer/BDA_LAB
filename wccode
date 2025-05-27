@@ -1,0 +1,7 @@
+start-all.sh
+ jps
+hadoop fs -mkdir -p inp
+hadoop fs -put sample.txt inp
+hadoop jar WordCount.jar wordcount.WCDriver inp outp
+hadoop fs -ls outp
+hadoop fs -cat outp/part-00000
