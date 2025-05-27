@@ -484,3 +484,114 @@ filtered.collect.foreach(println)
 
 
 
+
+
+
+
+cassandra
+
+onnected to Test Cluster at 127.0.0.1:9042
+[cqlsh 6.1.0 | Cassandra 4.1.8 | CQL spec 3.4.6 | Native protocol v5]
+Use HELP for help.
+cqlsh> create keyspace students with replication={'class':'SimpleStrategy','replication_factor':1};
+cqlsh> use students;
+cqlsh:students> create table student(rollno int primary key,name text,date timestamp,last double);
+cqlsh:students> begin batch insert into student(rollno,name,date, last) values(1,'Ashu','2012-03-12',89.9); apply batch;
+cqlsh:students> select * from student;
+
+ rollno | date                            | last | name
+--------+---------------------------------+------+------
+      1 | 2012-03-11 18:30:00.000000+0000 | 89.9 | Ashu
+
+(1 rows)
+cqlsh:students> update student set name='dinesh' where rollno=1;
+cqlsh:students> select * from student;
+
+ rollno | date                            | last | name
+--------+---------------------------------+------+--------
+      1 | 2012-03-11 18:30:00.000000+0000 | 89.9 | dinesh
+
+(1 rows)
+cqlsh:students> update student set rollno=2 where rollno=1;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="PRIMARY KEY part rollno found in SET part"
+cqlsh:students> alter table student add lang list<text>;
+cqlsh:students> select * from student;
+
+ rollno | date                            | lang | last | name
+--------+---------------------------------+------+------+--------
+      1 | 2012-03-11 18:30:00.000000+0000 | null | 89.9 | dinesh
+
+(1 rows)
+cqlsh:students> update student set lang=lang+['tamil','eng']where rollno=1;
+cqlsh:students> select * from student;
+
+ rollno | date                            | lang             | last | name
+--------+---------------------------------+------------------+------+--------
+      1 | 2012-03-11 18:30:00.000000+0000 | ['tamil', 'eng'] | 89.9 | dinesh
+
+(1 rows)
+cqlsh:students> begin batch insert into student(rollno,name,date, last) values(1,'Ashu','2012-03-12',89.9)using ttl 30; apply batch;
+cqlsh:students> select * from student;
+
+ rollno | date                            | lang             | last | name
+--------+---------------------------------+------------------+------+------
+      1 | 2012-03-11 18:30:00.000000+0000 | ['tamil', 'eng'] | 89.9 | Ashu
+
+(1 rows)
+cqlsh:students> begin batch insert into student(rollno,name,date, last) values(2,'Ash','2012-03-12',89.9)using ttl 30; apply batch;
+cqlsh:students> select * from student;
+
+ rollno | date                            | lang             | last | name
+--------+---------------------------------+------------------+------+------
+      1 | 2012-03-11 18:30:00.000000+0000 | ['tamil', 'eng'] | 89.9 | Ashu
+      2 | 2012-03-11 18:30:00.000000+0000 |             null | 89.9 |  Ash
+
+(2 rows)
+cqlsh:students> select ttl(rollno) from student where rollno=1
+            ... 
+cqlsh:students> select ttl(rollno) from student where rollno=1;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot use selection function ttl on PRIMARY KEY part rollno"
+cqlsh:students> select ttl(name) from student where rollno=1;
+
+ ttl(name)
+-----------
+
+(0 rows)
+cqlsh:students> select * from student;
+
+ rollno | date | lang             | last | name
+--------+------+------------------+------+------
+      1 | null | ['tamil', 'eng'] | null | null
+
+(1 rows)
+cqlsh:students> begin batch insert into student(rollno,name,date, last) values(2,'Ash','2012-03-12',89.9)using ttl 30; apply batch;
+cqlsh:students> select * from student;
+
+ rollno | date                            | lang             | last | name
+--------+---------------------------------+------------------+------+------
+      1 |                            null | ['tamil', 'eng'] | null | null
+      2 | 2012-03-11 18:30:00.000000+0000 |             null | 89.9 |  Ash
+
+(2 rows)
+cqlsh:students> select ttl(name) from student where rollno=2;
+
+ ttl(name)
+-----------
+        21
+
+(1 rows)
+cqlsh:students> copy student(rollno,name,date,last) to 'd:/in.csv';
+Using 16 child processes
+Can't open 'd:/in.csv' for writing: [Errno 2] No such file or directory: 'd:/in.csv'
+cqlsh:students> update student set rollno=2 where name='dhanush';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="PRIMARY KEY part rollno found in SET part"
+cqlsh:students> update student set last=2 where name='dhanush';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Some partition key parts are missing: rollno"
+cqlsh:students> create index on student(name);
+cqlsh:students> update student set last=2 where name='dhanush';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Some partition key parts are missing: rollno"
+cqlsh:students> update student set last=2 where rollno=2 and name='dhanush';
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Non PRIMARY KEY columns found in where clause: name "
+cqlsh:students> 
+cqlsh:students> 
+
