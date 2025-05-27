@@ -274,3 +274,7 @@ public class TopN {
     // You still need to implement the TopNReducer class
 }
 
+hadoop fs -mkdir -p in
+hadoop@bmscecse-HP-Pro-Tower-400-G9-PCI-Desktop-PC:~$ hadoop fs -put sample.txt in
+hadoop@bmscecse-HP-Pro-Tower-400-G9-PCI-Desktop-PC:~$ hadoop jar TopN.jar topn.TopN in ou
+
