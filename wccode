@@ -14,3 +14,198 @@ start-all.sh
 hadoop fs -mkdir -p input
 hadoop jar CGPA.jar cgpa.CGPADriver input output
 remove .CGPA in the driver class
+
+//code
+package cgpa;
+
+import java.io.IOException;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class CGPAMapper extends Mapper<Object, Text, Text, DoubleWritable> {
+
+    public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+        // Split line into tokens (even if just 1 value)
+        String[] tokens = value.toString().split("[,\\s]+"); // Split by comma or whitespace
+        for (String token : tokens) {
+            try {
+                double cgpa = Double.parseDouble(token.trim());
+                context.write(new Text("CGPA_MEAN"), new DoubleWritable(cgpa));
+                context.write(new Text("CGPA_MAX"), new DoubleWritable(cgpa));
+            } catch (NumberFormatException e) {
+                // Skip invalid numbers
+            }
+        }
+    }
+}
+
+
+
+
+package cgpa;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class CGPADriver {
+    public static void main(String[] args) throws Exception {
+        if (args.length != 2) {
+            System.err.println("Usage: CGPA <input path> <output path>");
+            System.exit(-1);
+        }
+
+        Job job = Job.getInstance(new Configuration());
+        job.setJarByClass(CGPADriver.class);
+        job.setJobName("CGPA Analysis");
+
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        job.setMapperClass(CGPA.CGPAMapper.class);
+        job.setReducerClass(CGPA.CGPAReducer.class);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(DoubleWritable.class);
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+
+package cgpa;
+
+import java.io.IOException;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class CGPAReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
+    public void reduce(Text key, Iterable<DoubleWritable> values, Context context)
+            throws IOException, InterruptedException {
+        if (key.toString().equals("CGPA_MEAN")) {
+            double sum = 0;
+            int count = 0;
+            for (DoubleWritable val : values) {
+                sum += val.get();
+                count++;
+            }
+            context.write(new Text("Overall Mean CGPA"), new DoubleWritable(sum / count));
+        } else if (key.toString().equals("CGPA_MAX")) {
+            double max = Double.MIN_VALUE;
+            for (DoubleWritable val : values) {
+                max = Math.max(max, val.get());
+            }
+            context.write(new Text("Overall Max CGPA"), new DoubleWritable(max));
+        }
+    }
+}
+
+
+TopN
+package-topn
+package samples.topn;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class TopNMapper extends Mapper<Object, Text, Text, IntWritable> {
+    private static final IntWritable one = new IntWritable(1);
+    private Text word = new Text();
+
+    private String tokens = "[_|$#<>\\^=\\[\\]*/\\\\,;,.\\-:()?!\"']";
+
+    public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+        String cleanLine = value.toString().toLowerCase().replaceAll(this.tokens, " ");
+        StringTokenizer itr = new StringTokenizer(cleanLine);
+        while (itr.hasMoreTokens()) {
+            this.word.set(itr.nextToken().trim());
+            context.write(this.word, one);
+        }
+    }
+}
+package samples.topn;
+
+import java.io.IOException;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class TopNCombiner extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+        int sum = 0;
+        for (IntWritable val : values)
+            sum += val.get();
+        context.write(key, new IntWritable(sum));
+    }
+}
+
+package samples.topn;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Reducer;
+import utils.MiscUtils;
+
+public class TopNReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    private Map<Text, IntWritable> countMap = new HashMap<>();
+
+    public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+        int sum = 0;
+        for (IntWritable val : values)
+            sum += val.get();
+        this.countMap.put(new Text(key), new IntWritable(sum));
+    }
+
+    @Override
+    protected void cleanup(Context context) throws IOException, InterruptedException {
+        Map<Text, IntWritable> sortedMap = MiscUtils.sortByValues(this.countMap);
+        int counter = 0;
+        for (Text key : sortedMap.keySet()) {
+            if (counter++ == 20) // change 20 to N for configurable Top-N
+                break;
+            context.write(key, sortedMap.get(key));
+        }
+    }
+}
+
+package utils;
+
+import java.util.*;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+
+public class MiscUtils {
+
+    public static Map<Text, IntWritable> sortByValues(Map<Text, IntWritable> map) {
+        // Create a list from the entries of the map
+        List<Map.Entry<Text, IntWritable>> entryList = new ArrayList<>(map.entrySet());
+
+        // Sort the list in descending order of values
+        Collections.sort(entryList, new Comparator<Map.Entry<Text, IntWritable>>() {
+            public int compare(Map.Entry<Text, IntWritable> e1, Map.Entry<Text, IntWritable> e2) {
+                return e2.getValue().compareTo(e1.getValue()); // Descending
+            }
+        });
+
+        // Put the sorted entries into a LinkedHashMap to preserve order
+        Map<Text, IntWritable> sortedMap = new LinkedHashMap<>();
+        for (Map.Entry<Text, IntWritable> entry : entryList) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
+    }
+}
+
