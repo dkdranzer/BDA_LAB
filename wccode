@@ -182,6 +182,7 @@ public class TopNReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
     }
 }
 
+create new package Utils, and click on it for new class MiscUtils and set package name as Utils
 package utils;
 
 import java.util.*;
