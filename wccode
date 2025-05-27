@@ -171,6 +171,36 @@ public class TopNReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
             sum += val.get();
         this.countMap.put(new Text(key), new IntWritable(sum));
     }
+For rdd and flatmap
+
+Exit Spark Shell if it’s open:
+:q
+
+nano sparkdata.txt
+//write some lines in the file and then Save and exit the file: Ctrl + O, Enter, Ctrl + X
+
+Launch Spark Shell :
+spark-shell
+
+
+//  Reads the file line-by-line into an RDD.
+val data = sc.textFile("sparkdata.txt")
+
+// Split each line into words
+val splitdata = data.flatMap(line => line.split(" "))
+
+// Convert each word into a (word, 1) pair
+val mapdata = splitdata.map(word => (word, 1))
+
+// Reduce by key to count occurrences of each word
+val reducedata = mapdata.reduceByKey(_ + _)
+
+// Filter to get words with count > 4
+val filtered = reducedata.filter { case (word, count) => count > 4 }
+
+// Collect and print the result
+filtered.collect.foreach(println)
+
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
@@ -180,7 +210,37 @@ public class TopNReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
             if (counter++ == 20) // change 20 to N for configurable Top-N
                 break;
             context.write(key, sortedMap.get(key));
-        }
+        }For rdd and flatmap
+
+Exit Spark Shell if it’s open:
+:q
+
+nano sparkdata.txt
+//write some lines in the file and then Save and exit the file: Ctrl + O, Enter, Ctrl + X
+
+Launch Spark Shell :
+spark-shell
+
+
+//  Reads the file line-by-line into an RDD.
+val data = sc.textFile("sparkdata.txt")
+
+// Split each line into words
+val splitdata = data.flatMap(line => line.split(" "))
+
+// Convert each word into a (word, 1) pair
+val mapdata = splitdata.map(word => (word, 1))
+
+// Reduce by key to count occurrences of each word
+val reducedata = mapdata.reduceByKey(_ + _)
+
+// Filter to get words with count > 4
+val filtered = reducedata.filter { case (word, count) => count > 4 }
+
+// Collect and print the result
+filtered.collect.foreach(println)
+
+
     }
 }
 
@@ -200,7 +260,37 @@ public class MiscUtils {
         // Sort the list in descending order of values
         Collections.sort(entryList, new Comparator<Map.Entry<Text, IntWritable>>() {
             public int compare(Map.Entry<Text, IntWritable> e1, Map.Entry<Text, IntWritable> e2) {
-                return e2.getValue().compareTo(e1.getValue()); // Descending
+                return e2.getValue().compareTo(e1.getValueFor rdd and flatmap
+
+Exit Spark Shell if it’s open:
+:q
+
+nano sparkdata.txt
+//write some lines in the file and then Save and exit the file: Ctrl + O, Enter, Ctrl + X
+
+Launch Spark Shell :
+spark-shell
+
+
+//  Reads the file line-by-line into an RDD.
+val data = sc.textFile("sparkdata.txt")
+
+// Split each line into words
+val splitdata = data.flatMap(line => line.split(" "))
+
+// Convert each word into a (word, 1) pair
+val mapdata = splitdata.map(word => (word, 1))
+
+// Reduce by key to count occurrences of each word
+val reducedata = mapdata.reduceByKey(_ + _)
+
+// Filter to get words with count > 4
+val filtered = reducedata.filter { case (word, count) => count > 4 }
+
+// Collect and print the result
+filtered.collect.foreach(println)
+
+()); // Descending
             }
         });
 
@@ -284,11 +374,71 @@ hadoop@bmscecse-HP-Pro-Tower-400-G9-PCI-Desktop-PC:~$ hadoop jar TopN.jar topn.T
 
 scala
 :q
-nano filename.scala
+nano filename.scalaFor rdd and flatmap
+
+Exit Spark Shell if it’s open:
+:q
+
+nano sparkdata.txt
+//write some lines in the file and then Save and exit the file: Ctrl + O, Enter, Ctrl + X
+
+Launch Spark Shell :
+spark-shell
+
+
+//  Reads the file line-by-line into an RDD.
+val data = sc.textFile("sparkdata.txt")
+
+// Split each line into words
+val splitdata = data.flatMap(line => line.split(" "))
+
+// Convert each word into a (word, 1) pair
+val mapdata = splitdata.map(word => (word, 1))
+
+// Reduce by key to count occurrences of each word
+val reducedata = mapdata.reduceByKey(_ + _)
+
+// Filter to get words with count > 4
+val filtered = reducedata.filter { case (word, count) => count > 4 }
+
+// Collect and print the result
+filtered.collect.foreach(println)
+
+
 copy paste code 
 object ExampleForLoop1 {
   def main(args: Array[String]) {
-    var counter: Int = 0;
+    var counter: Int = 0;For rdd and flatmap
+
+Exit Spark Shell if it’s open:
+:q
+
+nano sparkdata.txt
+//write some lines in the file and then Save and exit the file: Ctrl + O, Enter, Ctrl + X
+
+Launch Spark Shell :
+spark-shell
+
+
+//  Reads the file line-by-line into an RDD.
+val data = sc.textFile("sparkdata.txt")
+
+// Split each line into words
+val splitdata = data.flatMap(line => line.split(" "))
+
+// Convert each word into a (word, 1) pair
+val mapdata = splitdata.map(word => (word, 1))
+
+// Reduce by key to count occurrences of each word
+val reducedata = mapdata.reduceByKey(_ + _)
+
+// Filter to get words with count > 4
+val filtered = reducedata.filter { case (word, count) => count > 4 }
+
+// Collect and print the result
+filtered.collect.foreach(println)
+
+
     for (counter <- 1 to 100)
       print(counter + " ");
   }
@@ -300,5 +450,37 @@ scala filename
 
 
 
-https://www.nologin.in/spark
+https://www.nologin.in/spark1
+
+For rdd and flatmap
+
+Exit Spark Shell if it’s open:
+:q
+
+nano sparkdata.txt
+//write some lines in the file and then Save and exit the file: Ctrl + O, Enter, Ctrl + X
+
+Launch Spark Shell :
+spark-shell
+
+
+//  Reads the file line-by-line into an RDD.
+val data = sc.textFile("sparkdata.txt")
+
+// Split each line into words
+val splitdata = data.flatMap(line => line.split(" "))
+
+// Convert each word into a (word, 1) pair
+val mapdata = splitdata.map(word => (word, 1))
+
+// Reduce by key to count occurrences of each word
+val reducedata = mapdata.reduceByKey(_ + _)
+
+// Filter to get words with count > 4
+val filtered = reducedata.filter { case (word, count) => count > 4 }
+
+// Collect and print the result
+filtered.collect.foreach(println)
+
+
 
