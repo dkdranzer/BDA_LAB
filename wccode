@@ -278,3 +278,27 @@ hadoop fs -mkdir -p in
 hadoop@bmscecse-HP-Pro-Tower-400-G9-PCI-Desktop-PC:~$ hadoop fs -put sample.txt in
 hadoop@bmscecse-HP-Pro-Tower-400-G9-PCI-Desktop-PC:~$ hadoop jar TopN.jar topn.TopN in ou
 
+
+
+
+
+scala
+:q
+nano filename.scala
+copy paste code 
+object ExampleForLoop1 {
+  def main(args: Array[String]) {
+    var counter: Int = 0;
+    for (counter <- 1 to 100)
+      print(counter + " ");
+  }
+}
+change object name to filename
+ctrl +o,enter,cntr x
+scalac filename.scala
+scala filename
+
+
+
+https://www.nologin.in/spark
+
